@@ -7,7 +7,7 @@ const PRODUCTS = {
 export async function handler(event, context) {
   // CORS headers
   const headers = {
-    "Access-Control-Allow-Origin": "https://my.readymag.com", // Readymag origin
+    "Access-Control-Allow-Origin": "https://my.readymag.com/edit/5931573/1", // Readymag origin
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
   };
