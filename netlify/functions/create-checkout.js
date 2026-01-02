@@ -1,3 +1,37 @@
+export async function handler(event) {
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 200,
+      headers,
+      body: ""
+    }
+  }
+
+  let body
+  try {
+    body = JSON.parse(event.body)
+  } catch {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: "Invalid JSON in request body" })
+    }
+  }
+
+  const { items, country } = body
+
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: "You must send at least one item" })
+    }
+  }
+
+  // rest of your Stripe + shipping logic
+}
+
+
 import Stripe from "stripe"
 
 const headers = {
@@ -15,7 +49,7 @@ const SHIPPING_ZONES = {
 }
 
 const PRODUCTS = {
-  poster_a2: { name: "Poster A2", price: 2500, weight: 0.4 }
+  test: { name: "test", price: 2500, weight: 0.4 }
 }
 
 export async function handler(event) {
