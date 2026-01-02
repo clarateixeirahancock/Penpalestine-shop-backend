@@ -1,3 +1,4 @@
+// Redeploy to pick up Stripe secret key
 import Stripe from "stripe"
 
 const PRODUCTS = {
