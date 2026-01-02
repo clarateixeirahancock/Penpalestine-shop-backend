@@ -1,3 +1,4 @@
+console.log("Stripe key exists:", !!process.env.STRIPE_SECRET_KEY)
 // Redeploy to pick up Stripe secret key
 import Stripe from "stripe"
 
