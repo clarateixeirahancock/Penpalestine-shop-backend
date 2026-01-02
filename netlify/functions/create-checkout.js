@@ -1,4 +1,10 @@
-// redeploy to pick up Stripe key
+export async function handler(event) {
+
+  console.log("Stripe key exists:", !!process.env.STRIPE_SECRET_KEY)  // TEMPORARY
+
+  // ... rest of your code
+
+  // redeploy to pick up Stripe key
 import Stripe from "stripe"
 
 // ===== CORS HEADERS =====
