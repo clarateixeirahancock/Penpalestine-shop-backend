@@ -1,29 +1,20 @@
-export async function handler(event) {
-
-  console.log("Stripe key exists:", !!process.env.STRIPE_SECRET_KEY)  // TEMPORARY
-
-  // ... rest of your code
-
-  // redeploy to pick up Stripe key
 import Stripe from "stripe"
 
 // ===== CORS HEADERS =====
 const headers = {
-  "Access-Control-Allow-Origin": "*",  // Change "*" to your Readymag URL if you want
+  "Access-Control-Allow-Origin": "https://my.readymag.com", // restrict to your site
   "Access-Control-Allow-Headers": "Content-Type",
   "Access-Control-Allow-Methods": "POST, OPTIONS"
 }
 
 // ===== PRODUCT LIST =====
-// Add your products here: id = internal ID, price in cents, weight in kg
 const PRODUCTS = {
-  poster_a2: { name: "Poster A2", price: 2500, weight: 0.1 },
-  poster_a1: { name: "Poster A1", price: 4000, weight: 0.1 },
-  mug_classic: { name: "Classic Mug", price: 1500, weight: 0.1 }
+  poster_a2: { name: "Poster A2", price: 2500, weight: 0.4 },
+  poster_a1: { name: "Poster A1", price: 4000, weight: 0.8 },
+  mug_classic: { name: "Classic Mug", price: 1500, weight: 0.5 }
 }
 
-// ===== SHIPPING RULES =====
-// Base cost + per kg by region
+// ===== SHIPPING =====
 const SHIPPING_ZONES = {
   US: { base: 500, perKg: 300 },
   EU: { base: 700, perKg: 400 },
@@ -33,13 +24,17 @@ const SHIPPING_ZONES = {
 // ===== NETLIFY FUNCTION =====
 export async function handler(event) {
 
-  // ===== HANDLE PRE-FLIGHT =====
+  // ===== PRE-FLIGHT =====
   if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, headers, body: "" }
+    return {
+      statusCode: 200,
+      headers,
+      body: ""
+    }
   }
 
   try {
-    // ===== PARSE REQUEST BODY =====
+    // ===== PARSE BODY =====
     const body = JSON.parse(event.body || "{}")
     const { items, country } = body
 
@@ -47,11 +42,11 @@ export async function handler(event) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: "You must send at least one item" })
+        body: JSON.stringify({ error: "No items sent" })
       }
     }
 
-    // ===== CALCULATE TOTAL WEIGHT AND LINE ITEMS =====
+    // ===== CALCULATE LINE ITEMS =====
     let totalWeight = 0
     let lineItems = []
 
@@ -64,7 +59,6 @@ export async function handler(event) {
           body: JSON.stringify({ error: `Unknown product ID: ${item.id}` })
         }
       }
-
       totalWeight += product.weight * item.quantity
 
       lineItems.push({
@@ -77,7 +71,7 @@ export async function handler(event) {
       })
     }
 
-    // ===== CALCULATE SHIPPING =====
+    // ===== SHIPPING =====
     const zone = SHIPPING_ZONES[country] ? country : "ROW"
     const shippingCost = SHIPPING_ZONES[zone].base + totalWeight * SHIPPING_ZONES[zone].perKg
 
@@ -90,7 +84,7 @@ export async function handler(event) {
       quantity: 1
     })
 
-    // ===== CREATE STRIPE CHECKOUT =====
+    // ===== CREATE STRIPE SESSION =====
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -100,7 +94,7 @@ export async function handler(event) {
       cancel_url: "https://yourreadymagsite.com/cancel"
     })
 
-    // ===== RETURN SESSION URL =====
+    // ===== RETURN =====
     return {
       statusCode: 200,
       headers,
@@ -115,3 +109,4 @@ export async function handler(event) {
     }
   }
 }
+
