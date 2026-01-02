@@ -1,3 +1,6 @@
+console.log("Stripe key exists:", !!process.env.STRIPE_SECRET_KEY);
+
+// Redeploy to pick up Stripe key
 import Stripe from "stripe";
 
 // Example products — replace/add your actual products later
