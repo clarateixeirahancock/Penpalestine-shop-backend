@@ -1,5 +1,11 @@
 import Stripe from "stripe"
 
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS"
+}
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 const SHIPPING_ZONES = {
@@ -13,6 +19,13 @@ const PRODUCTS = {
 }
 
 export async function handler(event) {
+    if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 200,
+      headers,
+      body: ""
+    }
+  }
   try {
     const { items, country } = JSON.parse(event.body)
 
@@ -59,11 +72,13 @@ export async function handler(event) {
 
     return {
       statusCode: 200,
+      headers,
       body: JSON.stringify({ url: session.url })
     }
   } catch (err) {
     return {
       statusCode: 500,
+      headers,
       body: err.message
     }
   }
