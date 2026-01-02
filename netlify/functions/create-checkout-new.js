@@ -4,25 +4,28 @@ const PRODUCTS = {
   poster_a2: { name: "Poster A2", price: 2500, weight: 0.4 },
 };
 
-export async function handler(event, context, callback) {
+export async function handler(event, context) {
+  // CORS headers
   const headers = {
-    "Access-Control-Allow-Origin": "https://my.readymag.com",
+    "Access-Control-Allow-Origin": "https://my.readymag.com", // Readymag origin
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
   };
 
+  // Handle preflight requests
   if (event.httpMethod === "OPTIONS") {
-    callback(null, { statusCode: 200, headers, body: "" });
-    return;
+    return {
+      statusCode: 200,
+      headers,
+      body: "",
+    };
   }
 
   try {
     console.log("Stripe key exists:", !!process.env.STRIPE_SECRET_KEY);
 
     if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error(
-        "Stripe secret key not found. Check your Netlify environment variable."
-      );
+      throw new Error("Stripe secret key not found");
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -31,8 +34,11 @@ export async function handler(event, context, callback) {
     const { items, country } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
-      callback(null, { statusCode: 400, headers, body: JSON.stringify({ error: "No items sent" }) });
-      return;
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: "No items sent" }),
+      };
     }
 
     const lineItems = items.map((item) => {
@@ -56,10 +62,18 @@ export async function handler(event, context, callback) {
       cancel_url: "https://yourreadymagsite.com/cancel",
     });
 
-    callback(null, { statusCode: 200, headers, body: JSON.stringify({ url: session.url }) });
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ url: session.url }),
+    };
   } catch (err) {
     console.error(err);
-    callback(null, { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) });
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: err.message }),
+    };
   }
 }
 
